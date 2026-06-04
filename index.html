@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>나만의 몬스터 퀘스트</title>
-    <!-- 레트로 픽셀 폰트 (갈무리 폰트) -->
     <link href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css" rel="stylesheet">
     <style>
         :root {
@@ -23,7 +22,6 @@
             justify-content: center;
         }
 
-        /* 게임보이/포켓덱스 느낌의 메인 컨테이너 */
         .container {
             width: 100%;
             max-width: 500px;
@@ -46,7 +44,6 @@
         h1, h2, h3 { margin-top: 0; color: #000; text-transform: uppercase; }
         h2 { font-size: 15px; color: #333; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* 레벨 및 경험치 바 */
         .status-bar { margin-bottom: 15px; }
         .level-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
         .exp-box {
@@ -72,7 +69,6 @@
             color: #000;
         }
 
-        /* 퀘스트 아이템 스타일 */
         .quest-box {
             background: #fff;
             border: 2px solid #000;
@@ -93,7 +89,6 @@
         .quest-reward { font-size: 12px; color: var(--dex-red); font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .quest-reward img { width: 24px; height: 24px; object-fit: contain; }
 
-        /* 버튼 스타일 */
         button {
             font-family: 'Galmuri11', sans-serif;
             background-color: #fff;
@@ -110,7 +105,6 @@
         .btn-danger { background-color: #ff7675; color: white;}
         .btn-add { background-color: #74b9ff; width: 100%; font-size: 16px; padding: 10px; margin-top: 10px; font-weight: bold;}
 
-        /* 입력 폼 */
         input[type="text"], input[type="password"] {
             font-family: 'Galmuri11', sans-serif;
             width: calc(100% - 20px);
@@ -121,7 +115,6 @@
             border-radius: 4px;
         }
 
-        /* 몬스터 스티커 선택기 */
         .sticker-selector {
             display: flex;
             flex-wrap: wrap;
@@ -154,7 +147,6 @@
         }
         .sticker-opt.selected { border-color: #E3350D; background-color: #ffeaa7; }
         
-        /* 이미 선택된(도감 등록 또는 퀘스트 진행중) 몬스터 디자인 */
         .sticker-opt.occupied {
             filter: grayscale(100%);
             opacity: 0.35;
@@ -169,7 +161,6 @@
             right: -2px;
         }
         
-        /* 삭제 버튼 */
         .btn-delete {
             background-color: transparent;
             border: none;
@@ -182,7 +173,6 @@
         }
         .btn-delete:active { transform: scale(0.9); box-shadow: none; }
 
-        /* 도감 (스티커 북) */
         .pokedex-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -207,7 +197,6 @@
         .monster-slot img.sprite { width: 45px; height: 45px; object-fit: contain; }
         .monster-slot .name { font-size: 12px; font-weight: bold; margin-top: 5px; text-align: center; }
 
-        /* 모달 및 오버레이 */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content {
             background: #fff;
@@ -237,14 +226,15 @@
         
         .trainer-name-edit { cursor: pointer; text-decoration: underline; color: var(--dex-red); }
 
-        /* 동기화 전용 UI 스타일 */
         .sync-badge {
             background-color: #000;
             color: #fff;
-            padding: 2px 8px;
-            font-size: 11px;
+            padding: 4px 10px;
+            font-size: 12px;
             border-radius: 4px;
             cursor: pointer;
+            border: 2px solid #000;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -252,7 +242,6 @@
 
 <div class="container">
     
-    <!-- 아이의 스테이터스 화면 -->
     <div class="screen">
         <div class="status-bar">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -260,7 +249,6 @@
                     <span id="levelDisplay">LV. 1</span>
                     [<span id="trainerTitleDisplay" style="color:var(--dex-red);">초보</span>] 
                 </div>
-                <!-- 실시간 클라우드 동기화 표시기 -->
                 <div id="syncIndicator" class="sync-badge" onclick="openSyncModal()">🌐 로컬 모드</div>
             </div>
             <div class="level-text" style="margin-top: 0; margin-bottom: 8px;">
@@ -274,33 +262,27 @@
         <p style="font-size: 12px; margin:0; color: #555;">퀘스트를 완료하고 새로운 몬스터를 수집하자!</p>
     </div>
 
-    <!-- 1. 오늘 할 일 (진행중 퀘스트) -->
     <div class="screen">
         <h2>🔥 오늘의 배틀 (할 일)</h2>
         <div id="taskList"></div>
     </div>
 
-    <!-- 2. 스티커 도감 -->
     <div class="screen">
         <h2>📖 몬스터 도감 <span id="pokedexCount" style="font-size: 12px; color: #7f8c8d; margin-left: 5px;">(0/151)</span></h2>
         <div class="pokedex-grid" id="stickerBook"></div>
     </div>
 
-    <!-- 3. 놓친 퀘스트 -->
     <div class="screen">
         <h2>💤 도망간 몬스터 (놓친 할일)</h2>
         <div id="missedList"></div>
     </div>
 
-    <!-- 4. 아빠의 퀘스트 등록 존 -->
     <div class="screen" style="background-color: #ffd32a;">
         <h2>🛠️ [아빠 전용] 퀘스트 생성소</h2>
         <input type="text" id="taskInput" placeholder="새로운 할 일 입력 (예: 일기 쓰기)">
         
         <p style="font-size: 12px; margin-bottom: 5px; font-weight:bold;">보상 몬스터 선택 (잡은 포켓몬은 제외돼요):</p>
-        <div class="sticker-selector" id="stickerSelector">
-            <!-- 자바스크립트로 스티커 목록 생성됨 -->
-        </div>
+        <div class="sticker-selector" id="stickerSelector"></div>
         
         <p style="font-size: 12px; margin-bottom: 5px;">또는 인터넷 이미지 주소(URL) 입력:</p>
         <input type="text" id="customImgUrl" placeholder="http://... (선택사항)">
@@ -312,73 +294,20 @@
 
 </div>
 
-<!-- 레벨업 모달 -->
-<div id="modal" class="overlay">
-    <div class="modal-content">
-        <h1 style="color: var(--dex-red); margin-bottom: 10px;">LEVEL UP!</h1>
-        <p style="font-size: 14px; line-height: 1.4;">축하합니다!<br>트레이너 레벨이 올랐습니다!</p>
-        <div style="font-size: 50px; margin: 10px 0;">🎉</div>
-        <button onclick="closeModal()" style="margin-top: 10px;">계속하기</button>
-    </div>
-</div>
+<div id="modal" class="overlay"><div class="modal-content"><h1 style="color: var(--dex-red); margin-bottom: 10px;">LEVEL UP!</h1><p style="font-size: 14px; line-height: 1.4;">축하합니다!<br>트레이너 레벨이 올랐습니다!</p><div style="font-size: 50px; margin: 10px 0;">🎉</div><button onclick="closeModal()">계속하기</button></div></div>
+<div id="catchOverlay" class="overlay"><div class="catch-anim-box" id="catchAnimImg"></div><div class="catch-text" id="catchAnimText">포획 성공!</div></div>
+<div id="zoomModal" class="overlay" onclick="closeZoomModal()"><div style="display:flex; flex-direction:column; align-items:center;"><div class="zoomed-img" id="zoomedImgContent"></div><div class="zoomed-name" id="zoomedNameText"></div><p style="color:#ddd; font-size:12px; margin-top:15px;">클릭하면 닫힙니다.</p></div></div>
+<div id="nameModal" class="overlay"><div class="modal-content"><h2>트레이너 이름 변경</h2><input type="text" id="nameInput"><div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;"><button class="btn-success" onclick="saveTrainerName()">저장</button><button class="btn-danger" onclick="closeNameModal()">취소</button></div></div></div>
+<div id="alertModal" class="overlay"><div class="modal-content"><h2 style="color: var(--dex-red); margin-bottom: 10px;">알림</h2><p id="alertMessage" style="font-size: 14px; margin-bottom: 20px; line-height: 1.4;"></p><button class="btn-success" onclick="closeAlertModal()">확인</button></div></div>
+<div id="pwModal" class="overlay"><div class="modal-content"><h2>권한 확인</h2><p style="font-size:13px; margin-bottom:15px;">비밀번호를 입력하세요.</p><input type="password" id="pwModalInput"><div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;"><button class="btn-success" onclick="verifyPasswordAction()">확인</button><button class="btn-danger" onclick="closePwModal()">취소</button></div></div></div>
 
-<!-- 포획 애니메이션 오버레이 -->
-<div id="catchOverlay" class="overlay">
-    <div class="catch-anim-box" id="catchAnimImg"></div>
-    <div class="catch-text" id="catchAnimText">신비한 몬스터를 잡았다!</div>
-</div>
-
-<!-- 몬스터 도감 확대 모달 -->
-<div id="zoomModal" class="overlay" onclick="closeZoomModal()">
-    <div style="display:flex; flex-direction:column; align-items:center;">
-        <div class="zoomed-img" id="zoomedImgContent"></div>
-        <div class="zoomed-name" id="zoomedNameText"></div>
-        <p style="color:#ddd; font-size:12px; margin-top:15px;">화면 아무 곳이나 클릭하면 닫힙니다.</p>
-    </div>
-</div>
-
-<!-- 트레이너 이름 변경 모달 -->
-<div id="nameModal" class="overlay">
-    <div class="modal-content">
-        <h2>트레이너 이름 변경</h2>
-        <input type="text" id="nameInput" placeholder="새로운 이름 입력">
-        <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
-            <button class="btn-success" onclick="saveTrainerName()">저장</button>
-            <button class="btn-danger" onclick="closeNameModal()">취소</button>
-        </div>
-    </div>
-</div>
-
-<!-- 커스텀 알림 모달 -->
-<div id="alertModal" class="overlay">
-    <div class="modal-content">
-        <h2 style="color: var(--dex-red); margin-bottom: 10px;">알림</h2>
-        <p id="alertMessage" style="font-size: 14px; margin-bottom: 20px; line-height: 1.4;"></p>
-        <button class="btn-success" onclick="closeAlertModal()">확인</button>
-    </div>
-</div>
-
-<!-- 비밀번호 확인 모달 (삭제용) -->
-<div id="pwModal" class="overlay">
-    <div class="modal-content">
-        <h2>권한 확인</h2>
-        <p style="font-size:13px; margin-bottom:15px; line-height: 1.4;">퀘스트를 삭제하려면 비밀번호를 입력하세요.</p>
-        <input type="password" id="pwModalInput" placeholder="비밀번호" style="width:calc(100% - 20px); font-family: 'Galmuri11', sans-serif;">
-        <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
-            <button class="btn-success" onclick="verifyPasswordAction()">확인</button>
-            <button class="btn-danger" onclick="closePwModal()">취소</button>
-        </div>
-    </div>
-</div>
-
-<!-- 클라우드 동기화 설정 모달 -->
 <div id="syncModal" class="overlay">
     <div class="modal-content">
         <h2>🌐 멀티 디바이스 동기화</h2>
         <p style="font-size:12px; text-align: left; line-height: 1.5; color: #555; margin-bottom: 15px;">
-            아빠 스마트폰과 아이 패드에서 같은 동기화 코드를 사용하면 퀘스트와 도감이 실시간으로 합쳐지고 실시간 공유됩니다!
+            아빠 스마트폰과 아이 패드에 동일한 동기화 코드를 입력하면 대전 상황과 도감이 실시간 공유됩니다! (영문/숫자 추천)
         </p>
-        <input type="text" id="syncCodeInput" placeholder="동기화 코드 입력 (예: ourhouse)">
+        <input type="text" id="syncCodeInput" placeholder="예: ourhouse12">
         <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
             <button class="btn-success" onclick="saveSyncCode()">동기화 시작</button>
             <button class="btn-danger" onclick="closeSyncModal()">취소</button>
@@ -386,50 +315,34 @@
     </div>
 </div>
 
-<!-- Firebase SDK 로드 -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // 상태 관리 변수
+<script>
+    // 상태 데이터 관리
     let tasks = JSON.parse(localStorage.getItem('pokeTasks')) || [];
     let trainerName = localStorage.getItem('pokeTrainerName') || '지우';
-    let syncCode = localStorage.getItem('pokeSyncCode') || ''; // 공용 동기화 코드
+    let syncCode = localStorage.getItem('pokeSyncCode') || ''; 
     
     const EXP_PER_LEVEL = 5;
     const getPokeImageUrl = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+    const CLOUD_BUCKET_URL = "https://kvdb.io/M8pXpZ4y7TqN2bA9C1eF5g/"; // 공개용 통합 무료 클라우드 허브 키
     
     let selectedStickerUrl = getPokeImageUrl(1);
     let previousLevel = 1;
     let pendingDeleteId = null;
-
-    // Firebase 연동 설정 변수들
-    let db = null;
-    let auth = null;
-    let unsubscribeSync = null;
+    let syncLoopInterval = null;
 
     const TRAINER_TITLES = [
-        { min: 1, max: 4, name: "초보" },
-        { min: 5, max: 9, name: "중수" },
-        { min: 10, max: 14, name: "고수" },
-        { min: 15, max: 19, name: "엘리트" },
-        { min: 20, max: 24, name: "챔피언" },
-        { min: 25, max: 29, name: "마스터" },
-        { min: 30, max: 34, name: "대마스터" },
-        { min: 35, max: 39, name: "영웅" },
-        { min: 40, max: 44, name: "전설" },
-        { min: 45, max: 49, name: "신화" },
-        { min: 50, max: 999, name: "우주최강" }
+        { min: 1, max: 4, name: "초보" }, { min: 5, max: 9, name: "중수" }, { min: 10, max: 14, name: "고수" },
+        { min: 15, max: 19, name: "엘리트" }, { min: 20, max: 24, name: "챔피언" }, { min: 25, max: 29, name: "마스터" },
+        { min: 30, max: 34, name: "대마스터" }, { min: 35, max: 39, name: "영웅" }, { min: 40, max: 44, name: "전설" },
+        { min: 45, max: 49, name: "신화" }, { min: 50, max: 999, name: "우주최강" }
     ];
 
-    // 스티커 선택기 업데이트 및 렌더링
+    // 스티커 도감 중복 체크 및 랜더링
     window.initStickerSelector = function() {
         const selector = document.getElementById('stickerSelector');
         if (!selector) return;
         selector.innerHTML = '';
         
-        // 이미 퀘스트(대기, 완성, 도망)에 소유/배정된 몬스터 주소 집합 추출
         const occupiedStickers = new Set(tasks.map(t => t.sticker));
         let firstAvailableSet = false;
 
@@ -445,11 +358,9 @@
             const img = document.createElement('img');
             img.src = imgUrl;
             img.loading = 'lazy';
-            
             div.appendChild(img);
             
             if (!isOccupied) {
-                // 아직 미정인 몬스터 중 첫 번째를 기본 선택으로 맞춤
                 if (!firstAvailableSet && !occupiedStickers.has(selectedStickerUrl)) {
                     selectedStickerUrl = imgUrl;
                     div.classList.add('selected');
@@ -460,39 +371,110 @@
                     window.initStickerSelector();
                 };
             } else {
-                div.onclick = () => {
-                    showAlert("이미 퀘스트에 사용 중이거나 도감에 등록된 몬스터입니다!");
-                };
+                div.onclick = () => { showAlert("이미 사용 중이거나 획득한 몬스터입니다!"); };
             }
             selector.appendChild(div);
         }
     };
 
-    // 로컬과 클라우드 통합 저장 기능 (자동 갱신 및 저장 핵심)
-    window.saveAndRender = async function() {
-        // 1. 우선 로컬 백업용 저장
+    // 🚀 핵심: 실시간 클라우드 데이터 읽기 (GET)
+    async function loadFromCloud() {
+        if (!syncCode.trim()) return;
+        try {
+            const response = await fetch(CLOUD_BUCKET_URL + syncCode.trim());
+            if (response.ok) {
+                const cloudData = await response.json();
+                
+                // 최신 변경점 타임스탬프 검증 및 동기화
+                tasks = cloudData.tasks || [];
+                trainerName = cloudData.trainerName || '지우';
+                
+                localStorage.setItem('pokeTasks', JSON.stringify(tasks));
+                localStorage.setItem('pokeTrainerName', trainerName);
+                
+                render();
+                window.initStickerSelector();
+                updateSyncStatusUI(true);
+            } else if (response.status === 404) {
+                // 클라우드에 방이 없으면 현재 상태를 최초로 올림
+                await saveToCloud();
+            }
+        } catch (err) {
+            console.error("클라우드 연동 오류:", err);
+            updateSyncStatusUI(false);
+        }
+    }
+
+    // 🚀 핵심: 실시간 클라우드 데이터 저장 (PUT)
+    async function saveToCloud() {
         localStorage.setItem('pokeTasks', JSON.stringify(tasks));
         localStorage.setItem('pokeTrainerName', trainerName);
         localStorage.setItem('pokeSyncCode', syncCode);
 
-        // 2. 클라우드 동기화가 설정되어 있다면 파이어스토어에 업로드
-        if (db && syncCode.trim() !== '') {
-            try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'trainerState', syncCode.trim());
-                await setDoc(docRef, {
-                    tasks: tasks,
-                    trainerName: trainerName,
-                    updatedAt: Date.now()
-                });
-            } catch (err) {
-                console.error("클라우드 저장 실패:", err);
-            }
+        if (!syncCode.trim()) {
+            updateSyncStatusUI(null);
+            return;
         }
+
+        try {
+            const payload = {
+                tasks: tasks,
+                trainerName: trainerName,
+                updatedAt: Date.now()
+            };
+            const response = await fetch(CLOUD_BUCKET_URL + syncCode.trim(), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.ok) {
+                updateSyncStatusUI(true);
+            } else {
+                updateSyncStatusUI(false);
+            }
+        } catch (err) {
+            console.error("클라우드 전송 실패:", err);
+            updateSyncStatusUI(false);
+        }
+    }
+
+    function updateSyncStatusUI(isOnline) {
+        const indicator = document.getElementById('syncIndicator');
+        if (!indicator) return;
+        if (isOnline === true) {
+            indicator.innerText = `📶 연결됨: ${syncCode}`;
+            indicator.style.backgroundColor = '#4CAF50';
+        } else if (isOnline === false) {
+            indicator.innerText = `⚠️ 연결 오류`;
+            indicator.style.backgroundColor = '#ff7675';
+        } else {
+            indicator.innerText = `🌐 로컬 모드`;
+            indicator.style.backgroundColor = '#000';
+        }
+    }
+
+    function startSyncLoop() {
+        if (syncLoopInterval) clearInterval(syncLoopInterval);
+        if (syncCode.trim()) {
+            loadFromCloud();
+            // 10초마다 클라우드 데이터 감시 및 당겨오기
+            syncLoopInterval = setInterval(loadFromCloud, 10000);
+        }
+    }
+
+    window.saveSyncCode = function() {
+        const inputVal = document.getElementById('syncCodeInput').value.trim();
+        syncCode = inputVal;
+        localStorage.setItem('pokeSyncCode', syncCode);
+        closeSyncModal();
+        startSyncLoop();
+    };
+
+    window.saveAndRender = async function() {
+        await saveToCloud();
         render();
     };
 
-    // 퀘스트 추가 (오늘의 날짜 자동 포함)
     window.addTask = function() {
         const titleInput = document.getElementById('taskInput');
         const customUrlInput = document.getElementById('customImgUrl');
@@ -506,8 +488,6 @@
         if (pw !== '0523') return showAlert("비밀번호가 틀렸습니다!");
         
         const finalStickerUrl = customUrl ? customUrl : selectedStickerUrl;
-
-        // 오늘 날짜 획득 (년. 월. 일)
         const today = new Date();
         const formattedDate = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
 
@@ -517,15 +497,12 @@
             sticker: finalStickerUrl, 
             status: 'active', 
             isUrl: true,
-            date: formattedDate // 자동 지정된 등록 일자
+            date: formattedDate
         });
         
-        titleInput.value = '';
-        customUrlInput.value = '';
-        pwInput.value = '';
-        
+        titleInput.value = ''; customUrlInput.value = ''; pwInput.value = '';
         window.saveAndRender();
-        window.initStickerSelector(); // 사용 가능한 포켓몬 목록 재생성
+        window.initStickerSelector();
     };
 
     window.requestDelete = function(id) {
@@ -541,7 +518,7 @@
                 tasks = tasks.filter(t => t.id !== pendingDeleteId);
                 window.saveAndRender();
                 window.initStickerSelector();
-                showAlert('퀘스트가 성공적으로 삭제되었습니다.');
+                showAlert('퀘스트가 완전히 삭제되었습니다.');
             }
             closePwModal();
         } else {
@@ -549,11 +526,7 @@
         }
     };
 
-    window.closePwModal = function() {
-        document.getElementById('pwModal').style.display = 'none';
-        pendingDeleteId = null;
-    };
-
+    window.closePwModal = function() { document.getElementById('pwModal').style.display = 'none'; pendingDeleteId = null; };
     window.completeTask = function(id) {
         const task = tasks.find(t => t.id === id);
         if (task) {
@@ -564,24 +537,9 @@
             });
         }
     };
+    window.markMissed = function(id) { const task = tasks.find(t => t.id === id); if (task) { task.status = 'missed'; window.saveAndRender(); } };
+    window.reassignTask = function(id) { const task = tasks.find(t => t.id === id); if (task) { task.status = 'active'; window.saveAndRender(); } };
 
-    window.markMissed = function(id) {
-        const task = tasks.find(t => t.id === id);
-        if (task) {
-            task.status = 'missed';
-            window.saveAndRender();
-        }
-    };
-
-    window.reassignTask = function(id) {
-        const task = tasks.find(t => t.id === id);
-        if (task) {
-            task.status = 'active';
-            window.saveAndRender();
-        }
-    };
-
-    // 레벨 및 호칭 계산
     function calculateLevel() {
         const completedCount = tasks.filter(t => t.status === 'completed').length;
         const currentLevel = Math.floor(completedCount / EXP_PER_LEVEL) + 1;
@@ -603,32 +561,17 @@
         document.getElementById('pokedexCount').innerText = `(${completedCount}/151)`;
     }
 
-    window.closeModal = function() {
-        document.getElementById('modal').style.display = 'none';
-    };
+    window.closeModal = function() { document.getElementById('modal').style.display = 'none'; };
+    function renderSticker(task) { return (task.isUrl || task.sticker.startsWith('http')) ? `<img src="${task.sticker}" class="sprite" alt="monster">` : `<div class="sprite">${task.sticker}</div>`; }
 
-    function renderSticker(task) {
-        if (task.isUrl || task.sticker.startsWith('http')) {
-            return `<img src="${task.sticker}" class="sprite" alt="monster">`;
-        } else {
-            return `<div class="sprite">${task.sticker}</div>`;
-        }
-    }
-
-    // 데이터 동기화 기반 화면 다시 그리기
     function render() {
         const taskList = document.getElementById('taskList');
         const missedList = document.getElementById('missedList');
         const stickerBook = document.getElementById('stickerBook');
-        
         if (!taskList || !missedList || !stickerBook) return;
 
-        taskList.innerHTML = '';
-        missedList.innerHTML = '';
-        stickerBook.innerHTML = '';
-        
-        let activeCount = 0;
-        let missedCount = 0;
+        taskList.innerHTML = ''; missedList.innerHTML = ''; stickerBook.innerHTML = '';
+        let activeCount = 0; let missedCount = 0;
 
         tasks.forEach(task => {
             if (task.status === 'active') {
@@ -636,7 +579,7 @@
                 taskList.innerHTML += `
                     <div class="quest-box">
                         <div class="quest-info">
-                            <div class="quest-date">📅 ${task.date || '날짜 미확인'}</div>
+                            <div class="quest-date">📅 ${task.date || '날짜 미정'}</div>
                             <div style="display:flex; justify-content:space-between; align-items:start;">
                                 <div class="quest-title">${task.title}</div>
                                 <button class="btn-delete" onclick="requestDelete(${task.id})">✖️</button>
@@ -654,7 +597,7 @@
                         <div style="display:flex; align-items:center; flex-grow:1;">
                             <div class="grayscale-sprite">${renderSticker(task)}</div>
                             <div class="quest-info">
-                                <div class="quest-date">📅 ${task.date || '날짜 미확인'}</div>
+                                <div class="quest-date">📅 ${task.date || '날짜 미정'}</div>
                                 <div style="display:flex; justify-content:space-between; align-items:start;">
                                     <div class="quest-title" style="text-decoration: line-through; margin-bottom:0; font-size: 18px;">${task.title}</div>
                                     <button class="btn-delete" onclick="requestDelete(${task.id})">✖️</button>
@@ -665,7 +608,7 @@
                     </div>`;
             } else if (task.status === 'completed') {
                 stickerBook.innerHTML += `
-                    <div class="monster-slot" ondblclick="showZoomModal('${task.sticker}', '${task.title}', ${task.isUrl})">
+                    <div class="monster-slot" onclick="showZoomModal('${task.sticker}', '${task.title}', ${task.isUrl})">
                         ${renderSticker(task)}
                         <div class="name">${task.title.substring(0,6)}..</div>
                     </div>`;
@@ -674,153 +617,39 @@
 
         if(activeCount === 0) taskList.innerHTML = '<p style="font-size:12px; color:#666; text-align:center; padding:10px 0;">현재 진행 중인 배틀이 없습니다.</p>';
         if(missedCount === 0) missedList.innerHTML = '<p style="font-size:12px; color:#666; text-align:center; padding:10px 0;">도망간 몬스터가 없습니다!</p>';
-
         calculateLevel();
     }
 
-    // 커스텀 알림 시스템
-    window.showAlert = function(msg) {
-        document.getElementById('alertMessage').innerText = msg;
-        document.getElementById('alertModal').style.display = 'flex';
-    };
-    window.closeAlertModal = function() {
-        document.getElementById('alertModal').style.display = 'none';
-    };
+    window.showAlert = function(msg) { document.getElementById('alertMessage').innerText = msg; document.getElementById('alertModal').style.display = 'flex'; };
+    window.closeAlertModal = function() { document.getElementById('alertModal').style.display = 'none'; };
+    window.openNameModal = function() { document.getElementById('nameInput').value = trainerName; document.getElementById('nameModal').style.display = 'flex'; };
+    window.closeNameModal = function() { document.getElementById('nameModal').style.display = 'none'; };
+    window.saveTrainerName = function() { const n = document.getElementById('nameInput').value.trim(); if (n) { trainerName = n; window.saveAndRender(); } closeNameModal(); };
+    window.openSyncModal = function() { document.getElementById('syncCodeInput').value = syncCode; document.getElementById('syncModal').style.display = 'flex'; };
+    window.closeSyncModal = function() { document.getElementById('syncModal').style.display = 'none'; };
 
-    window.openNameModal = function() {
-        document.getElementById('nameInput').value = trainerName;
-        document.getElementById('nameModal').style.display = 'flex';
-    };
-    window.closeNameModal = function() {
-        document.getElementById('nameModal').style.display = 'none';
-    };
-    window.saveTrainerName = function() {
-        const newName = document.getElementById('nameInput').value.trim();
-        if (newName) {
-            trainerName = newName;
-            window.saveAndRender();
-        }
-        closeNameModal();
-    };
-
-    // 포획 액션 오버레이 애니메이션
     function showCatchAnimation(task, callback) {
         const overlay = document.getElementById('catchOverlay');
         const imgTarget = document.getElementById('catchAnimImg');
-        const textTarget = document.getElementById('catchAnimText');
-        
         imgTarget.innerHTML = renderSticker(task);
-        textTarget.innerText = `신난다!\n[ ${task.title} ]\n포획 성공!`;
-        
         overlay.style.display = 'flex';
-        
-        setTimeout(() => {
-            overlay.style.display = 'none';
-            callback();
-        }, 1800);
+        setTimeout(() => { overlay.style.display = 'none'; callback(); }, 1500);
     }
 
-    // 확대 이미지 팝업
-    window.showZoomModal = function(stickerUrl, title, isUrl) {
+    window.showZoomModal = function(url, title, isUrl) {
         const modal = document.getElementById('zoomModal');
         const imgTarget = document.getElementById('zoomedImgContent');
         const nameTarget = document.getElementById('zoomedNameText');
-        
-        const tempTask = { isUrl: isUrl, sticker: stickerUrl };
-        imgTarget.innerHTML = renderSticker(tempTask);
+        imgTarget.innerHTML = renderSticker({ isUrl: isUrl, sticker: url });
         nameTarget.innerText = title;
-        
         modal.style.display = 'flex';
     };
-    window.closeZoomModal = function() {
-        document.getElementById('zoomModal').style.display = 'none';
-    };
+    window.closeZoomModal = function() { document.getElementById('zoomModal').style.display = 'none'; };
 
-    // 멀티 디바이스 실시간 동기화 코드 모달 열기/닫기
-    window.openSyncModal = function() {
-        document.getElementById('syncCodeInput').value = syncCode;
-        document.getElementById('syncModal').style.display = 'flex';
-    };
-    window.closeSyncModal = function() {
-        document.getElementById('syncModal').style.display = 'none';
-    };
-    window.saveSyncCode = function() {
-        const newSyncCode = document.getElementById('syncCodeInput').value.trim();
-        syncCode = newSyncCode;
-        localStorage.setItem('pokeSyncCode', syncCode);
-        closeSyncModal();
-        
-        // 동기화 코드 변경 시 Firebase 연결 재설정
-        setupFirebaseSync();
-    };
-
-    // Firebase 초기화 및 실시간 감시자 연결
-    async function setupFirebaseSync() {
-        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        if (unsubscribeSync) {
-            unsubscribeSync();
-            unsubscribeSync = null;
-        }
-
-        if (firebaseConfigStr) {
-            try {
-                const firebaseConfig = JSON.parse(firebaseConfigStr);
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // 1단계: 인증 활성화
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                // 2단계: 동기화 코드가 등록되어 있을 시 실시간 리스너 작동
-                if (syncCode.trim() !== '') {
-                    const syncDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'trainerState', syncCode.trim());
-                    
-                    document.getElementById('syncIndicator').innerText = `📶 동기화 중: ${syncCode}`;
-                    document.getElementById('syncIndicator').style.backgroundColor = '#4CAF50';
-
-                    unsubscribeSync = onSnapshot(syncDocRef, (docSnap) => {
-                        if (docSnap.exists()) {
-                            const cloudData = docSnap.data();
-                            tasks = cloudData.tasks || [];
-                            trainerName = cloudData.trainerName || '지우';
-                            render();
-                            window.initStickerSelector();
-                        } else {
-                            // 최초 동기화 시작 시 로컬 데이터를 클라우드에 복사해 초기화
-                            window.saveAndRender();
-                        }
-                    }, (err) => {
-                        console.error("Firestore 동기화 감시 실패:", err);
-                        document.getElementById('syncIndicator').innerText = `⚠️ 연결 끊김`;
-                        document.getElementById('syncIndicator').style.backgroundColor = '#ff7675';
-                    });
-                } else {
-                    document.getElementById('syncIndicator').innerText = `🌐 로컬 모드`;
-                    document.getElementById('syncIndicator').style.backgroundColor = '#000';
-                }
-            } catch (err) {
-                console.error("Firebase 연결 중 오류 발생:", err);
-            }
-        }
-    }
-
-    // 최초 로드 실행
-    window.addEventListener('load', async () => {
-        // 첫 화면 로드 시 레벨 수치 초기화
+    // 실행 초기화
+    window.addEventListener('load', () => {
         previousLevel = Math.floor(tasks.filter(t => t.status === 'completed').length / EXP_PER_LEVEL) + 1;
-        
-        // 동기화 시스템 작동 시작
-        await setupFirebaseSync();
-        
-        // UI 로딩
+        startSyncLoop();
         window.initStickerSelector();
         render();
     });
